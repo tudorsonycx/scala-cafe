@@ -12,6 +12,6 @@ case object AlcoholicDrink extends ItemCategory
 
 case object PremiumMeal extends ItemCategory
 
-case class Item(name: String, price: Float, category: ItemCategory, stock: Int = 0) {
+case class Item(name: String, price: Double, category: ItemCategory, stock: Int = 0) {
   override def toString: String = s"$name ($category) - $price"
 }
