@@ -8,6 +8,15 @@ class CafeSpec extends AnyWordSpec with Matchers {
 
   val cafe: Cafe = Cafe("Test Cafe", Menu(List(item1, item2, item3)))
 
+  "Cafe.showMenu" should {
+    "return a string representation of the menu" in {
+      val expectedResult: String =
+        "Test Item 1 (ColdFood) - 10.0\nTest Item 2 (HotFood) - 20.0\nTest Item 3 (PremiumMeal) - 30.0"
+
+      cafe.showMenu shouldBe expectedResult
+    }
+  }
+
   "Cafe.getItemCost" should {
     "return the total cost of an item" when {
       "called with valid item and quantity" in {
