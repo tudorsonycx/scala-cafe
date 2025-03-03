@@ -6,6 +6,8 @@ class CafeSpec extends AnyWordSpec with Matchers {
   val item2: Item = Item("Test Item 2", 20.0, HotFood, 5)
   val item3: Item = Item("Test Item 3", 30.0, PremiumMeal, 3)
 
+  val itemInvalid: Item = Item("Invalid Item", 10.0, ColdFood)
+
   val cafe: Cafe = Cafe("Test Cafe", Menu(List(item1, item2, item3)))
 
   "Cafe.showMenu" should {
@@ -26,7 +28,7 @@ class CafeSpec extends AnyWordSpec with Matchers {
 
     "return an error" when {
       "called with invalid item" in {
-        val result: Either[Exception, Double] = cafe.getItemCost(Item("Invalid Item", 10.0, ColdFood), 10)
+        val result: Either[Exception, Double] = cafe.getItemCost(itemInvalid, 1)
 
         val expected: Left[Exception, Nothing] =
           Left(Cafe.MenuInvalidItemError("Invalid Item not found in menu"))
@@ -41,6 +43,34 @@ class CafeSpec extends AnyWordSpec with Matchers {
           Left(Cafe.MenuInvalidQuantityError("Not enough stock for Test Item 1. Available: 0"))
 
         result shouldBe expectedResult
+      }
+    }
+  }
+
+  "Cafe.updateMenuItem" should {
+    "return the updated menu" when {
+      "called with valid item and stock" in {
+        cafe.updateMenuItem(item1, 10) shouldBe Map(item1 -> 10, item2 -> 5, item3 -> 3)
+      }
+    }
+
+    "throw an error" when {
+      "called with invalid item" in {
+        try {
+          cafe.updateMenuItem(itemInvalid, 10)
+        } catch {
+          case e: Cafe.MenuInvalidItemError =>
+            e.message shouldBe "Invalid Item not found in menu"
+        }
+      }
+
+      "called with negative stock" in {
+        try {
+          cafe.updateMenuItem(item1, -1)
+        } catch {
+          case e: Cafe.MenuInvalidQuantityError =>
+            e.getMessage shouldBe "Stock cannot be negative"
+        }
       }
     }
   }
