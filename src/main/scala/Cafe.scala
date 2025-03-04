@@ -5,13 +5,17 @@ case class Cafe(name: String, private val menu: Menu) {
 
   var menuWithStock: Map[Item, Int] = menu.items.map(item => (item, item.stock)).toMap
 
-  def getItemCost(item: Item, quantity: Int): Either[Cafe.CafeError, Double] =
-    menuWithStock.get(item) match {
-      case Some(stock) if stock >= quantity => Right(item.price * quantity)
-      case Some(stock) => Left(
-        Cafe.MenuInvalidQuantityError(s"Not enough stock for ${item.name}. Available: $stock"))
-      case None => Left(Cafe.MenuInvalidItemError(s"${item.name} not found in menu"))
+  def getItemCost(item: Item, quantity: Int): Either[Cafe.CafeError, Double] = {
+    quantity match {
+      case q if q <= 0 => Left(Cafe.MenuInvalidQuantityError(s"Quantity cannot be negative or zero"))
+      case _ => menuWithStock.get(item) match {
+        case None => Left(Cafe.MenuInvalidItemError(s"${item.name} not found in menu"))
+        case Some(stock) => Left(
+          Cafe.MenuInvalidQuantityError(s"Not enough stock for ${item.name}. Available: $stock"))
+        case Some(stock) if stock >= quantity => Right(item.price * quantity)
+      }
     }
+  }
 
   def updateMenuItem(item: Item, stock: Int): Either[Cafe.CafeError, Map[Item, Int]] = {
     menuWithStock.get(item) match {
