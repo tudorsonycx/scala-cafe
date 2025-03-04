@@ -3,9 +3,9 @@ import scala.annotation.tailrec
 case class Cafe(name: String, private val menu: Menu) {
   def showMenu: String = menu.toString
 
-  private var menuWithStock: Map[Item, Int] = menu.items.map(item => (item, item.stock)).toMap
+  var menuWithStock: Map[Item, Int] = menu.items.map(item => (item, item.stock)).toMap
 
-  def getItemCost(item: Item, quantity: Int): Either[Exception, Double] =
+  def getItemCost(item: Item, quantity: Int): Either[Cafe.CafeMenuError, Double] =
     menuWithStock.get(item) match {
       case Some(stock) if stock >= quantity => Right(item.price * quantity)
       case Some(stock) => Left(
@@ -13,11 +13,11 @@ case class Cafe(name: String, private val menu: Menu) {
       case None => Left(Cafe.MenuInvalidItemError(s"${item.name} not found in menu"))
     }
 
-  def updateMenuItem(item: Item, stock: Int): Map[Item, Int] = {
+  def updateMenuItem(item: Item, stock: Int): Either[Cafe.CafeMenuError, Map[Item, Int]] = {
     menuWithStock.get(item) match {
-      case None => throw Cafe.MenuInvalidItemError(s"${item.name} not found in menu")
-      case Some(_) if stock >= 0 => menuWithStock + (item -> stock)
-      case Some(_) => throw Cafe.MenuInvalidQuantityError(s"Stock cannot be negative")
+      case None => Left(Cafe.MenuInvalidItemError(s"${item.name} not found in menu"))
+      case Some(_) if stock >= 0 => Right(menuWithStock + (item -> stock))
+      case Some(_) => Left(Cafe.MenuInvalidQuantityError(s"Stock cannot be negative"))
     }
   }
 }
