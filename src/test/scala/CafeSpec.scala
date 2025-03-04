@@ -34,9 +34,14 @@ class CafeSpec extends AnyWordSpec with Matchers {
         val expected1: Left[Cafe.CafeError, Nothing] =
           Left(Cafe.MenuInvalidQuantityError("Quantity cannot be negative or zero"))
 
+        result1 shouldBe expected1
+
         val result2: Either[Cafe.CafeError, Double] = cafe.getItemCost(item0, -1)
+
         val expected2: Left[Cafe.CafeError, Nothing] =
           Left(Cafe.MenuInvalidQuantityError("Quantity cannot be negative or zero"))
+
+        result2 shouldBe expected2
       }
 
       "called with invalid item" in {
