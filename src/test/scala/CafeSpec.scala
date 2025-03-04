@@ -64,4 +64,104 @@ class CafeSpec extends AnyWordSpec with Matchers {
       }
     }
   }
+
+  val customer: Customer = Customer("John Doe", 35)
+  "Cafe.placeOrder" should {
+    "return a bill" when {
+      "called with valid items list and no service charge" in {
+        val cafe: Cafe = Cafe("Test Cafe", Menu(List(item0, item1, item2, item3)))
+        val items: Map[Item, Int] = Map(item2 -> 2, item3 -> 3)
+
+        cafe.placeOrder(customer, items, addServiceCharge = false)() match {
+          case Right(bill) =>
+            bill.customer shouldBe customer
+            bill.amount shouldBe 130.0
+
+            cafe.menuWithStock(item2) shouldBe 3
+            cafe.menuWithStock(item3) shouldBe 0
+        }
+      }
+      "called with valid items list containing only drinks and automatic service charge" in {
+        val cafe: Cafe = Cafe("Test Cafe", Menu(List(item0, item1, item2, item3)))
+        val items: Map[Item, Int] = Map(item0 -> 3)
+
+        cafe.placeOrder(customer, items)() match {
+          case Right(bill) =>
+            bill.customer shouldBe customer
+            bill.amount shouldBe 15.0
+        }
+
+        cafe.menuWithStock(item0) shouldBe 17
+      }
+
+      "called with valid items list containing cold food and automatic service charge" in {
+        val cafe: Cafe = Cafe("Test Cafe", Menu(List(item0, item1, item2, item3)))
+        val items: Map[Item, Int] = Map(item0 -> 1, item1 -> 1)
+
+        cafe.placeOrder(customer, items)() match {
+          case Right(bill) =>
+            bill.customer shouldBe customer
+            bill.amount shouldBe 16.5
+        }
+
+        cafe.menuWithStock(item0) shouldBe 19
+        cafe.menuWithStock(item1) shouldBe 4
+      }
+
+      "called with valid items list containing hot food and automatic service charge" in {
+        val cafe: Cafe = Cafe("Test Cafe", Menu(List(item0, item1, item2, item3)))
+        val items: Map[Item, Int] = Map(item2 -> 2)
+
+        cafe.placeOrder(customer, items)() match {
+          case Right(bill) =>
+            bill.amount shouldBe 48.0
+        }
+
+        cafe.menuWithStock(item2) shouldBe 3
+      }
+
+      "called with valid items list containing premium meal and automatic service charge" in {
+        val cafe: Cafe = Cafe("Test Cafe", Menu(List(item0, item1, item2, item3)))
+        val items: Map[Item, Int] = Map(item0 -> 2, item2 -> 2, item3 -> 2)
+
+        cafe.placeOrder(customer, items)() match {
+          case Right(bill) =>
+            bill.amount shouldBe 137.5
+        }
+      }
+
+      "called with valid item list and custom service charge" in {
+        val cafe: Cafe = Cafe("Test Cafe", Menu(List(item0, item1, item2, item3)))
+        val items: Map[Item, Int] = Map(item1 -> 4, item2 -> 1, item3 -> 1)
+
+        cafe.placeOrder(customer, items)(Some(0.05)) match {
+          case Right(bill) =>
+            bill.amount shouldBe 94.5
+        }
+      }
+    }
+
+    "return an error" when {
+      "called with invalid items list" in {
+        cafe.placeOrder(customer, Map())() match {
+          case Left(e) =>
+            e shouldBe Cafe.OrderInvalidItemList("Order cannot be empty")
+        }
+      }
+
+      "called with list containing invalid item" in {
+        cafe.placeOrder(customer, Map(itemInvalid -> 1))() match {
+          case Left(e) =>
+            e shouldBe Cafe.MenuInvalidItemError("Invalid Item not found in menu")
+        }
+      }
+
+      "called with list containing item with invalid quantity" in {
+        cafe.placeOrder(customer, Map(item3 -> 4))() match {
+          case Left(e) =>
+            e shouldBe Cafe.MenuInvalidQuantityError("Not enough stock for Test Item 3. Available: 3")
+        }
+      }
+    }
+  }
 }
