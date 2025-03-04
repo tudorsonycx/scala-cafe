@@ -10,9 +10,9 @@ case class Cafe(name: String, private val menu: Menu) {
       case q if q <= 0 => Left(Cafe.MenuInvalidQuantityError(s"Quantity cannot be negative or zero"))
       case _ => menuWithStock.get(item) match {
         case None => Left(Cafe.MenuInvalidItemError(s"${item.name} not found in menu"))
-        case Some(stock) => Left(
+        case Some(stock) if stock < quantity => Left(
           Cafe.MenuInvalidQuantityError(s"Not enough stock for ${item.name}. Available: $stock"))
-        case Some(stock) if stock >= quantity => Right(item.price * quantity)
+        case Some(_) => Right(item.price * quantity)
       }
     }
   }

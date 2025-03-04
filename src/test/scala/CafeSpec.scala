@@ -168,6 +168,11 @@ class CafeSpec extends AnyWordSpec with Matchers {
       }
 
       "called with list containing item with invalid quantity" in {
+        cafe.placeOrder(customer, Map(item3 -> 0))() match {
+          case Left(e) =>
+            e shouldBe Cafe.MenuInvalidQuantityError("Quantity cannot be negative or zero")
+        }
+
         cafe.placeOrder(customer, Map(item3 -> 4))() match {
           case Left(e) =>
             e shouldBe Cafe.MenuInvalidQuantityError("Not enough stock for Test Item 3. Available: 3")
