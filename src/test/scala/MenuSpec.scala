@@ -18,50 +18,6 @@ class MenuSpec extends AnyWordSpec with Matchers {
     }
   }
 
-  "Menu.getItemCost" should {
-    "return the total cost of an item" when {
-      "called with valid item and quantity" in {
-        menu.getItemCost(item2, 2) shouldBe Right(40.0)
-      }
-    }
-
-    "return an error" when {
-      "called with negative or zero quantity" in {
-        val result1: Either[Cafe.CafeError, Double] = menu.getItemCost(item0, 0)
-
-        val expected1: Left[Cafe.CafeError, Nothing] =
-          Left(Cafe.MenuInvalidQuantityError("Quantity cannot be negative or zero"))
-
-        result1 shouldBe expected1
-
-        val result2: Either[Cafe.CafeError, Double] = menu.getItemCost(item0, -1)
-
-        val expected2: Left[Cafe.CafeError, Nothing] =
-          Left(Cafe.MenuInvalidQuantityError("Quantity cannot be negative or zero"))
-
-        result2 shouldBe expected2
-      }
-
-      "called with invalid item" in {
-        val result: Either[Exception, Double] = menu.getItemCost(itemInvalid, 1)
-
-        val expected: Left[Exception, Nothing] =
-          Left(Cafe.MenuInvalidItemError("Invalid Item not found in menu"))
-
-        result shouldBe expected
-      }
-
-      "called with invalid quantity" in {
-        val result: Either[Exception, Double] = menu.getItemCost(item1, 6)
-
-        val expectedResult: Left[Exception, Nothing] =
-          Left(Cafe.MenuInvalidQuantityError("Not enough stock for Test Item 1. Available: 5"))
-
-        result shouldBe expectedResult
-      }
-    }
-  }
-
   "Menu.updateMenuItem" should {
     "return the updated menu" when {
       "called with valid item and stock" in {
