@@ -26,17 +26,18 @@ class LoyaltyCardSpec extends AnyWordSpec with Matchers {
       card.isNextFree shouldBe false
     }
 
-    "return true when the card has 9 stamps" in {
-      @tailrec
-      def iterate(n: Int = 0, acc: List[LocalDate] = List()): List[LocalDate] = {
-        if (n == 9) {
-          acc
-        } else {
-          iterate(n + 1, acc :+ LocalDate.now().plusDays(n))
-        }
+    @tailrec
+    def get9TimestampsList(n: Int = 0, acc: List[LocalDate] = List()): List[LocalDate] = {
+      if (n == 9) {
+        acc
+      } else {
+        get9TimestampsList(n + 1, acc :+ LocalDate.now().plusDays(n))
       }
+    }
 
-      val timestampsMock: List[LocalDate] = iterate()
+    "return true when the card has 9 stamps" in {
+
+      val timestampsMock: List[LocalDate] = get9TimestampsList()
 
       val card: DrinksLoyaltyCard = new DrinksLoyaltyCard() {
         timestamps = timestampsMock
