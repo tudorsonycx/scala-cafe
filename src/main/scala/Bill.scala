@@ -12,13 +12,14 @@ case class Bill(customer: Customer, var items: Map[Item, Int], serviceCharge: Do
 
         firstDrink match {
           case Some((drink, quantity)) =>
-            if (card.isNextFree) {
+            val message: String = if (card.isNextFree) {
               items = items + (drink -> (quantity - 1)) + (drink.copy(price = 0) -> 1)
               s"Free drink applied: ${drink.name}"
             } else {
-              card.addTimestamp()
               s"Free drink not available yet"
             }
+            card.addTimestamp()
+            message
           case None => s"No drinks in order"
         }
       case None => "No drinks loyalty card"

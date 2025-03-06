@@ -50,6 +50,10 @@ class BillSpec extends AnyWordSpec with Matchers {
           "Test Item 0 x 1 x 0.0\nSubtotal: 15.0\nService Charge: 0.1\nTotal: 16.5"
 
       bill.toString shouldBe expectedResult
+      bill.customer.loyaltyCard match {
+        case Some(card: DrinksLoyaltyCard) =>
+          card.getTimestampsLength shouldBe 0
+      }
     }
   }
 }
