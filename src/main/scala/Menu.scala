@@ -3,31 +3,37 @@ import scala.annotation.tailrec
 case class Menu private(items: List[Item]) {
   override def toString: String = items.mkString("\n")
 
-  private var itemsWithStock: Map[Item, Int] = items.map(item => (item, item.stock)).toMap
+  private var itemsWithStock: Map[String, Int] = items.map(item => (item.name, item.stock)).toMap
 
-  def isItemAvailable(item: Item, quantity: Int): Boolean =
-    itemsWithStock.get(item).exists(stock => stock > 0 && stock >= quantity)
+  private val itemNamesWithItem: Map[String, Item] = items.map(item => (item.name, item)).toMap
 
-  def updateMenuItem(item: Item, stock: Int): Either[Cafe.CafeError, Map[Item, Int]] = {
-    itemsWithStock.get(item) match {
-      case None => Left(Cafe.MenuInvalidItemError(s"${item.name} not found in menu"))
-      case Some(_) if stock >= 0 => Right(itemsWithStock + (item -> stock))
+  def getItemByName(itemName: String): Option[Item] = {
+    itemNamesWithItem.get(itemName)
+  }
+
+  def isItemAvailable(itemName: String, quantity: Int): Boolean =
+    itemsWithStock.get(itemName).exists(stock => stock > 0 && stock >= quantity)
+
+  def updateMenuItem(itemName: String, stock: Int): Either[Cafe.CafeError, Map[String, Int]] = {
+    itemsWithStock.get(itemName) match {
+      case None => Left(Cafe.MenuInvalidItemError(s"$itemName not found in menu"))
+      case Some(_) if stock >= 0 => Right(itemsWithStock + (itemName -> stock))
       case Some(_) => Left(Cafe.MenuInvalidQuantityError(s"Stock cannot be negative"))
     }
   }
 
-  def updateMenuAfterOrder(items: Map[Item, Int]): Either[Cafe.CafeError, Map[Item, Int]] = {
+  def updateMenuAfterOrder(items: Map[String, Int]): Either[Cafe.CafeError, String] = {
     @tailrec
-    def iterate(iItems: Map[Item, Int], acc: Map[Item, Int]): Either[Cafe.CafeError, Map[Item, Int]] = {
+    def iterate(iItems: Map[String, Int], acc: Map[String, Int]): Either[Cafe.CafeError, String] = {
       iItems.headOption match {
         case None =>
           itemsWithStock = itemsWithStock ++ acc
-          Right(itemsWithStock)
-        case Some((item, quantity)) =>
-          if (isItemAvailable(item, quantity)) {
-            iterate(iItems.tail, acc + (item -> (itemsWithStock(item) - quantity)))
+          Right("Order successful")
+        case Some((itemName, quantity)) =>
+          if (isItemAvailable(itemName, quantity)) {
+            iterate(iItems.tail, acc + (itemName -> (itemsWithStock(itemName) - quantity)))
           } else {
-            Left(Cafe.MenuUnavailableItemError(s"$item not available"))
+            Left(Cafe.MenuUnavailableItemError(s"$itemName not available"))
           }
       }
     }
