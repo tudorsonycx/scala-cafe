@@ -26,10 +26,10 @@ class LoyaltyCardSpec extends AnyWordSpec with Matchers {
       card.isNextFree shouldBe false
     }
 
-    "return true when the card has 10 stamps" in {
+    "return true when the card has 9 stamps" in {
       @tailrec
       def iterate(n: Int = 0, acc: List[LocalDate] = List()): List[LocalDate] = {
-        if (n == 10) {
+        if (n == 9) {
           acc
         } else {
           iterate(n + 1, acc :+ LocalDate.now().plusDays(n))

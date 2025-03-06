@@ -15,7 +15,7 @@ case class DrinksLoyaltyCard() extends LoyaltyCard {
   }
 
   def isNextFree: Boolean = {
-    if (timestamps.length == 10) {
+    if (timestamps.length + 1 == 10) {
       timestamps = List()
       true
     } else {
