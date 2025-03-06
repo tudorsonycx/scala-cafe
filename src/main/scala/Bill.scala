@@ -19,6 +19,7 @@ case class Bill(customer: Customer, var items: Map[Item, Int], serviceCharge: Do
               card.addTimestamp()
               s"Free drink not available yet"
             }
+          case None => s"No drinks in order"
         }
       case None => "No drinks loyalty card"
     }
