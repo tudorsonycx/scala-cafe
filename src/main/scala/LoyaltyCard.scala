@@ -9,18 +9,25 @@ case class DrinksLoyaltyCard() extends LoyaltyCard {
     if (timestamps.lastOption.contains(LocalDate.now())) {
       Left(LoyaltyCard.LoyaltyCardStampEarned)
     } else {
-      timestamps = timestamps :+ LocalDate.now()
+      if (isNextFree) {
+        timestamps = List()
+      } else {
+        timestamps = timestamps :+ LocalDate.now()
+      }
       Right("Loyalty card stamp added")
     }
   }
 
   def isNextFree: Boolean = {
     if (timestamps.length + 1 == 10) {
-      timestamps = List()
       true
     } else {
       false
     }
+  }
+
+  def getTimestampsLength: Int = {
+    timestamps.length
   }
 }
 
