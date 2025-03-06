@@ -7,8 +7,6 @@ class MenuSpec extends AnyWordSpec with Matchers {
   val item2: Item = Item("Test Item 2", 20.0, HotFood, 5)
   val item3: Item = Item("Test Item 3", 30.0, PremiumMeal, 3)
 
-  val itemInvalid: Item = Item("Invalid Item", 10.0, ColdFood)
-
   val menu: Menu = Menu(List(item0, item1, item2, item3))
 
   "Menu.toString" should {
@@ -21,16 +19,63 @@ class MenuSpec extends AnyWordSpec with Matchers {
   "Menu.updateMenuItem" should {
     "return the updated menu" when {
       "called with valid item and stock" in {
-        menu.updateMenuItem(item1, 10) shouldBe Right(Map(item0 -> 20, item1 -> 10, item2 -> 5, item3 -> 3))
+        menu.updateMenuItem("Test Item 1", 10) shouldBe Right(Map(
+          "Test Item 0" -> 20,
+          "Test Item 1" -> 10,
+          "Test Item 2" -> 5,
+          "Test Item 3" -> 3
+        ))
       }
     }
 
     "return an error" when {
       "called with invalid item" in {
-        menu.updateMenuItem(itemInvalid, 10) shouldBe Left(Cafe.MenuInvalidItemError("Invalid Item not found in menu"))
+        menu.updateMenuItem("Invalid Item", 10) shouldBe Left(Cafe.MenuInvalidItemError("Invalid Item not found in menu"))
       }
       "called with negative stock" in {
-        menu.updateMenuItem(item1, -1) shouldBe Left(Cafe.MenuInvalidQuantityError("Stock cannot be negative"))
+        menu.updateMenuItem("Test Item 1", -1) shouldBe Left(Cafe.MenuInvalidQuantityError("Stock cannot be negative"))
+      }
+    }
+  }
+
+  "Menu.isItemAvailable" should {
+    "return false" when {
+      "the item is not on the menu" in {
+        menu.isItemAvailable("Invalid Item", 10) shouldBe false
+      }
+    }
+  }
+
+  "Menu.getItemByName" should {
+    "return the item" when {
+      "the item is on the menu" in {
+        menu.getItemByName("Test Item 1") shouldBe Some(item1)
+      }
+    }
+
+    "return None" when {
+      "the item is not on the menu" in {
+        menu.getItemByName("Invalid Item") shouldBe None
+      }
+    }
+  }
+
+  "Menu.updateMenuAfterOrder" should {
+    "return an error" when {
+      "the order is empty" in {
+        menu.updateMenuAfterOrder(Map()) shouldBe Left(Cafe.OrderInvalidItemList("Item map cannot be empty"))
+      }
+      "the item is not on the menu" in {
+        menu.updateMenuAfterOrder(Map("Invalid Item" -> 10)) shouldBe Left(Cafe.MenuUnavailableItemError("Invalid Item not available"))
+      }
+      "the item is out of stock" in {
+        menu.updateMenuAfterOrder(Map("Test Item 3" -> 10)) shouldBe Left(Cafe.MenuUnavailableItemError("Test Item 3 not available"))
+      }
+    }
+
+    "return a success message" when {
+      "the order is valid" in {
+        menu.updateMenuAfterOrder(Map("Test Item 0" -> 1, "Test Item 1" -> 1)) shouldBe Right("Order successful")
       }
     }
   }
