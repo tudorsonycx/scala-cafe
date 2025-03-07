@@ -12,12 +12,12 @@ case class Menu private(items: List[Item]) {
   }
 
   def isItemAvailable(itemName: String, quantity: Int): Boolean =
-    itemsWithStock.get(itemName).exists(stock => stock > 0 && stock >= quantity)
+    itemNamesWithStock.get(itemName).exists(stock => stock > 0 && stock >= quantity)
 
   def updateMenuItem(itemName: String, stock: Int): Either[Cafe.CafeError, Map[String, Int]] = {
-    itemsWithStock.get(itemName) match {
+    itemNamesWithStock.get(itemName) match {
       case None => Left(Cafe.MenuInvalidItemError(s"$itemName not found in menu"))
-      case Some(_) if stock >= 0 => Right(itemsWithStock + (itemName -> stock))
+      case Some(_) if stock >= 0 => Right(itemNamesWithStock + (itemName -> stock))
       case Some(_) => Left(Cafe.MenuInvalidQuantityError(s"Stock cannot be negative"))
     }
   }
@@ -27,13 +27,13 @@ case class Menu private(items: List[Item]) {
     def iterate(iItems: Map[String, Int], acc: Map[String, Int]): Either[Cafe.CafeError, String] = {
       iItems.headOption match {
         case None =>
-          itemsWithStock = itemsWithStock ++ acc
+          itemNamesWithStock = itemNamesWithStock ++ acc
           Right("Order successful")
         case Some((itemName, quantity)) =>
           if (quantity <= 0) {
             Left(Cafe.MenuInvalidQuantityError(s"Order quantity cannot be negative"))
           } else if (isItemAvailable(itemName, quantity)) {
-            iterate(iItems.tail, acc + (itemName -> (itemsWithStock(itemName) - quantity)))
+            iterate(iItems.tail, acc + (itemName -> (itemNamesWithStock(itemName) - quantity)))
           } else {
             Left(Cafe.MenuUnavailableItemError(s"$itemName not available"))
           }
