@@ -3,7 +3,7 @@ import scala.annotation.tailrec
 case class Menu private(items: List[Item]) {
   override def toString: String = items.mkString("\n")
 
-  private var itemsWithStock: Map[String, Int] = items.map(item => (item.name, item.stock)).toMap
+  private var itemNamesWithStock: Map[String, Int] = items.map(item => (item.name, item.stock)).toMap
 
   private val itemNamesWithItem: Map[String, Item] = items.map(item => (item.name, item)).toMap
 
