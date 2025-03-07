@@ -1,3 +1,5 @@
+import java.time.LocalDate
+
 case class Cafe(name: String, private val menu: Menu) {
   def showMenu: String = menu.toString
 
@@ -32,6 +34,10 @@ case class Cafe(name: String, private val menu: Menu) {
             serviceCharge.map(sc => Bill(customer, itemsWithStock, sc))
         }
     }
+  }
+
+  def jobFactory: CafeJob = {
+    CafeJob(LocalDate.now(), this)
   }
 }
 
