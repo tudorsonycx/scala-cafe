@@ -2,6 +2,10 @@ import java.time.LocalDate
 
 trait LoyaltyCard {
   protected var timestamps: List[LocalDate] = List()
+
+  def getTimestampsLength: Int = {
+    timestamps.length
+  }
 }
 
 case class DrinksLoyaltyCard() extends LoyaltyCard {
@@ -25,8 +29,21 @@ case class DrinksLoyaltyCard() extends LoyaltyCard {
       false
     }
   }
+}
 
-  def getTimestampsLength: Int = {
+case class DiscountLoyaltyCard() extends LoyaltyCard {
+  def addStar(): Either[LoyaltyCard.LoyaltyCardError, String] = {
+    if (timestamps.lastOption.contains(LocalDate.now())) {
+      Left(LoyaltyCard.LoyaltyCardStampEarned)
+    } else if (getTimestampsLength < 8) {
+      timestamps = timestamps :+ LocalDate.now()
+      Right("You have earned a star")
+    } else {
+      Right("You have already earned 8 stars")
+    }
+  }
+
+  def getStarCount: Int = {
     timestamps.length
   }
 }
