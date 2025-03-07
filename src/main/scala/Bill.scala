@@ -1,5 +1,9 @@
-case class Bill(customer: Customer, var items: Map[Item, Int], serviceCharge: Double) {
+import sttp.client4.quick._
+import sttp.client4.Response
+import sttp.model.Uri
 
+
+case class Bill(customer: Customer, var items: Map[Item, Int], serviceCharge: Double, fromCurrencyCode: String, toCurrencyCode: String = "gbp") {
   private def applyDrinksLoyaltyCardDiscount(): Unit = {
     customer.loyaltyCard match {
       case Some(card: DrinksLoyaltyCard) =>
@@ -59,4 +63,22 @@ case class Bill(customer: Customer, var items: Map[Item, Int], serviceCharge: Do
   applyDrinksLoyaltyCardDiscount()
 
   applyDiscountLoyaltyCardDiscount()
+}
+
+object Bill extends App {
+
+  def fetchExchangeRate(from: String, to: String = "gbp"): Double = {
+    val uri: Uri = uri"https://cdn.jsdelivr.net/npm/@fawazahmed0/currency-api@latest/v1/currencies/"
+    try {
+      val response: Response[String] = quickRequest.get(uri"$uri${from.toLowerCase()}.json").send()
+      val json = ujson.read(response.body)
+      val rates: Map[String, Double] = json(from).obj.toMap.map({
+        case (key, value) => key -> value.num
+      })
+      rates.getOrElse(to, 1.0)
+    } catch {
+      case _: Exception =>
+        1.0
+    }
+  }
 }
