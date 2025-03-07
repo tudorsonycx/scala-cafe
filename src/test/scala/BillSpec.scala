@@ -29,7 +29,7 @@ class BillSpec extends AnyWordSpec with Matchers {
       }
     }
 
-    "return a string representation of the bill with discount" in {
+    "return a string representation of the bill with drinks discount" in {
       val timestampsMock: List[LocalDate] = get9TimestampsList()
 
       val item0: Item = Item("Test Item 0", 5.0, ColdDrink, 20)
