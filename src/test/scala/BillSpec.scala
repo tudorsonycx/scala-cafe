@@ -22,19 +22,25 @@ class BillSpec extends AnyWordSpec with Matchers {
     "return a string representation of the bill" in {
       val item0: Item = Item("Test Item 0", 5.0, ColdDrink, 20)
       val item1: Item = Item("Test Item 1", 10.0, ColdFood, 5)
+
       val customer: Customer = Customer("Test Customer", 18)
+
       val items: Map[Item, Int] = Map(item0 -> 2, item1 -> 1)
+
       val serviceCharge: Double = 0.1
-      val bill: Bill = Bill(customer, items, serviceCharge)
+
+      val bill: Bill = Bill(customer, items, serviceCharge, "usd")
+
+      val exchangeRate: Double = bill.exchangeRate
 
       val result: String = bill.toString
 
       result should include("Customer: Test Customer")
-      result should include("Test Item 0 x 2 x 5.0")
-      result should include("Test Item 1 x 1 x 10.0")
-      result should include("Subtotal: 20.0")
-      result should include(s"Service Charge: $serviceCharge")
-      result should include("Total: 22.0")
+      result should include(f"Test Item 0 x 2 x US$$${5.0 * exchangeRate}%.2f")
+      result should include(f"Test Item 1 x 1 x US$$${10.0 * exchangeRate}%.2f")
+      result should include(f"Subtotal: US$$${20.0 * exchangeRate}%.2f")
+      result should include(f"Service Charge: $serviceCharge")
+      result should include(f"Total: US$$${22.0 * exchangeRate}%.2f")
     }
 
     "return a string representation of the bill with drinks discount" in {
@@ -51,17 +57,19 @@ class BillSpec extends AnyWordSpec with Matchers {
 
       val serviceCharge: Double = 0.1
 
-      val bill: Bill = Bill(customer, items, serviceCharge)
+      val bill: Bill = Bill(customer, items, serviceCharge, "RON")
+
+      val exchangeRate: Double = bill.exchangeRate
 
       val result: String = bill.toString
 
       result should include("Customer: Test Customer")
-      result should include("Test Item 0 x 1 x 5.0")
-      result should include("Test Item 1 x 1 x 10.0")
-      result should include("Test Item 0 x 1 x 0.0")
-      result should include("Subtotal: 15.0")
-      result should include(s"Service Charge: $serviceCharge")
-      result should include("Total: 16.5")
+      result should include(f"Test Item 0 x 1 x RON${5.0 * exchangeRate}%.2f")
+      result should include(f"Test Item 1 x 1 x RON${10.0 * exchangeRate}%.2f")
+      result should include(f"Test Item 0 x 1 x RON${0.0 * exchangeRate}%.2f")
+      result should include(f"Subtotal: RON${15.0 * exchangeRate}%.2f")
+      result should include(f"Service Charge: $serviceCharge")
+      result should include(f"Total: RON${16.5 * exchangeRate}%.2f")
 
       bill.customer.loyaltyCard match {
         case Some(card: DrinksLoyaltyCard) =>
@@ -84,18 +92,21 @@ class BillSpec extends AnyWordSpec with Matchers {
 
         val serviceCharge: Double = 0.25
 
-        val bill: Bill = Bill(customer, items, serviceCharge)
+        val bill: Bill = Bill(customer, items, serviceCharge, "EUR")
+
+        val exchangeRate: Double = bill.exchangeRate
 
         val result: String = bill.toString
 
         result should include("Customer: Test Customer")
-        result should include("Test Item 0 x 1 x 9.8")
-        result should include("Test Item 1 x 2 x 5.88")
-        result should include("Test Item 2 x 1 x 17.0")
-        result should include("Test Item 3 x 3 x 4.9")
-        result should include("Subtotal: 53.26")
-        result should include(s"Service Charge: $serviceCharge")
-        result should include("Total: 66.58")
+        result should include(f"Test Item 0 x 1 x €${9.8 * exchangeRate}%.2f")
+        result should include(f"Test Item 1 x 2 x €${5.88 * exchangeRate}%.2f")
+        result should include(f"Test Item 2 x 1 x €${17.0 * exchangeRate}%.2f")
+        result should include(f"Test Item 3 x 3 x €${4.9 * exchangeRate}%.2f")
+        result should include(f"Subtotal: €${53.26 * exchangeRate}%.2f")
+        result should include(f"Service Charge: $serviceCharge")
+        result should include(f"Total: €${66.575 * exchangeRate}%.2f")
+
 
         bill.customer.loyaltyCard match {
           case Some(card: DiscountLoyaltyCard) =>
@@ -118,19 +129,21 @@ class BillSpec extends AnyWordSpec with Matchers {
 
         val serviceCharge: Double = 0.15
 
-        val bill: Bill = Bill(customer, items, serviceCharge)
+        val bill: Bill = Bill(customer, items, serviceCharge, "JPY")
+
+        val exchangeRate: Double = bill.exchangeRate
 
         val result: String = bill.toString
 
         result should include("Customer: Test Customer")
-        result should include("Test Item 0 x 2 x 16.8")
-        result should include("Test Item 1 x 1 x 30.0")
-        result should include("Test Item 2 x 2 x 25.0")
-        result should include("Test Item 3 x 10 x 4.2")
-        result should include("Test Item 4 x 2 x 29.4")
-        result should include("Subtotal: 214.4")
-        result should include(s"Service Charge: $serviceCharge")
-        result should include("Total: 246.56")
+        result should include(f"Test Item 0 x 2 x JP¥${16.8 * exchangeRate}%.2f")
+        result should include(f"Test Item 1 x 1 x JP¥${30.0 * exchangeRate}%.2f")
+        result should include(f"Test Item 2 x 2 x JP¥${25.0 * exchangeRate}%.2f")
+        result should include(f"Test Item 3 x 10 x JP¥${4.2 * exchangeRate}%.2f")
+        result should include(f"Test Item 4 x 2 x JP¥${29.4 * exchangeRate}%.2f")
+        result should include(f"Subtotal: JP¥${214.4 * exchangeRate}%.2f")
+        result should include(f"Service Charge: $serviceCharge")
+        result should include(f"Total: JP¥${246.56 * exchangeRate}%.2f")
 
         bill.customer.loyaltyCard match {
           case Some(card: DiscountLoyaltyCard) =>
