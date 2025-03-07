@@ -30,7 +30,9 @@ case class Menu private(items: List[Item]) {
           itemsWithStock = itemsWithStock ++ acc
           Right("Order successful")
         case Some((itemName, quantity)) =>
-          if (isItemAvailable(itemName, quantity)) {
+          if (quantity <= 0) {
+            Left(Cafe.MenuInvalidQuantityError(s"Order quantity cannot be negative"))
+          } else if (isItemAvailable(itemName, quantity)) {
             iterate(iItems.tail, acc + (itemName -> (itemsWithStock(itemName) - quantity)))
           } else {
             Left(Cafe.MenuUnavailableItemError(s"$itemName not available"))

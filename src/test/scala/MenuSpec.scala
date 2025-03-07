@@ -71,6 +71,12 @@ class MenuSpec extends AnyWordSpec with Matchers {
       "the item is out of stock" in {
         menu.updateMenuAfterOrder(Map("Test Item 3" -> 10)) shouldBe Left(Cafe.MenuUnavailableItemError("Test Item 3 not available"))
       }
+
+      "quantity is negative or 0" in {
+        menu.updateMenuAfterOrder(Map("Test Item 1" -> 0)) shouldBe Left(Cafe.MenuInvalidQuantityError("Order quantity cannot be negative"))
+
+        menu.updateMenuAfterOrder(Map("Test Item 1" -> -2)) shouldBe Left(Cafe.MenuInvalidQuantityError("Order quantity cannot be negative"))
+      }
     }
 
     "return a success message" when {
