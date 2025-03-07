@@ -117,6 +117,5 @@ object Bill extends App {
       case _: Exception =>
         Left(BillErrorFromCurrencyNotFound)
     }
-
   }
 }
