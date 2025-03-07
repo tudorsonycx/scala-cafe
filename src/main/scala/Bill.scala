@@ -92,7 +92,7 @@ case class Bill(customer: Customer, var items: Map[Item, Int], serviceCharge: Do
   applyExchangeRate()
 }
 
-object Bill extends App {
+object Bill {
 
   abstract class BillError(message: String) extends Exception(message)
 
