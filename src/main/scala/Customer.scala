@@ -1,1 +1,1 @@
-case class Customer(name: String, age: Int, job: Job, loyaltyCard: Option[LoyaltyCard] = None)
+case class Customer(name: String, age: Int, job: Option[Job], loyaltyCard: Option[LoyaltyCard] = None)

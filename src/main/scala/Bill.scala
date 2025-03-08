@@ -32,16 +32,21 @@ case class Bill(cafe: Cafe, customer: Customer, var items: Map[Item, Int], servi
 
   private def applyEmployeeDiscount(): Unit = {
     customer.job match {
-      case Cafe.CafeJob(joinedDate, place) =>
-        if (place == cafe) {
-          val monthsWorked: Int = Period.between(LocalDate.now(), joinedDate).getMonths
-          if (monthsWorked >= 6) {
-            items = items.map({
-              case (item, quantity) =>
-                item.copy(price = item.price * 0.9) -> quantity
-            })
-          }
+      case Some(job) =>
+        job match {
+          case Cafe.CafeJob(joinedDate, place) =>
+            if (place == cafe) {
+              val monthsWorked: Int = Period.between(LocalDate.now(), joinedDate).getMonths
+              if (monthsWorked >= 6) {
+                items = items.map({
+                  case (item, quantity) =>
+                    item.copy(price = item.price * 0.9) -> quantity
+                })
+              }
+            }
+          case _ => ()
         }
+      case None => ()
     }
   }
 
