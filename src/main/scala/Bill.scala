@@ -2,9 +2,10 @@ import sttp.client4.quick._
 import sttp.client4.Response
 import sttp.model.Uri
 
+import java.time.{LocalDate, Period}
 import java.util.Currency
 
-case class Bill(customer: Customer, var items: Map[Item, Int], serviceCharge: Double, toCurrencyCode: String = "GBP", fromCurrencyCode: String = "GBP") {
+case class Bill(cafe: Cafe, customer: Customer, var items: Map[Item, Int], serviceCharge: Double, toCurrencyCode: String = "GBP", fromCurrencyCode: String = "GBP") {
   private var toCurrencySymbol: String = Currency.getInstance(fromCurrencyCode.toUpperCase).getSymbol
 
   val exchangeRate: Double = getExchangeRate
@@ -27,6 +28,21 @@ case class Bill(customer: Customer, var items: Map[Item, Int], serviceCharge: Do
       case (item, quantity) =>
         item.copy(price = item.price * exchangeRate) -> quantity
     })
+  }
+
+  private def applyEmployeeDiscount(): Unit = {
+    customer.job match {
+      case Cafe.CafeJob(joinedDate, place) =>
+        if (place == cafe) {
+          val monthsWorked: Int = Period.between(LocalDate.now(), joinedDate).getMonths
+          if (monthsWorked >= 6) {
+            items = items.map({
+              case (item, quantity) =>
+                item.copy(price = item.price * 0.9) -> quantity
+            })
+          }
+        }
+    }
   }
 
   private def applyDrinksLoyaltyCardDiscount(): Unit = {
@@ -88,6 +104,8 @@ case class Bill(customer: Customer, var items: Map[Item, Int], serviceCharge: Do
   applyDrinksLoyaltyCardDiscount()
 
   applyDiscountLoyaltyCardDiscount()
+
+  applyEmployeeDiscount()
 
   applyExchangeRate()
 }
