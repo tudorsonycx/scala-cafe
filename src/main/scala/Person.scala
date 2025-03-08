@@ -1,0 +1,1 @@
+case class Person(name: String, age: Int, job: Option[Job], loyaltyCard: Option[LoyaltyCard] = None)

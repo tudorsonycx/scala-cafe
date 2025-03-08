@@ -10,7 +10,7 @@ class CafeSpec extends AnyWordSpec with Matchers with BeforeAndAfterEach {
 
   var cafe: Cafe = _
 
-  val customer: Customer = Customer("Test Customer", 18, None)
+  val customer: Person = Person("Test Customer", 18, None)
 
   override def beforeEach(): Unit = {
     cafe = Cafe("Test Cafe", Menu(List(item0, item1, item2, item3)))

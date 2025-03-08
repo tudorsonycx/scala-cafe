@@ -4,7 +4,7 @@ case class Cafe(name: String, private val menu: Menu) {
   def showMenu: String = menu.toString
 
   def placeOrder(
-    customer: Customer,
+    customer: Person,
     items: Map[String, Int],
     addServiceCharge: Boolean = true)
     (customServiceCharge: Option[Double] = None): Either[Cafe.CafeError, Bill] = {

@@ -25,7 +25,7 @@ class BillSpec extends AnyWordSpec with Matchers {
       val item0: Item = Item("Test Item 0", 5.0, ColdDrink, 20)
       val item1: Item = Item("Test Item 1", 10.0, ColdFood, 5)
 
-      val customer: Customer = Customer("Test Customer", 18, None)
+      val customer: Person = Person("Test Customer", 18, None)
 
       val items: Map[Item, Int] = Map(item0 -> 2, item1 -> 1)
 
@@ -53,7 +53,7 @@ class BillSpec extends AnyWordSpec with Matchers {
       val item0: Item = Item("Test Item 0", 5.0, ColdDrink, 20)
       val item1: Item = Item("Test Item 1", 10.0, ColdFood, 5)
 
-      val customer: Customer = Customer("Test Customer", 18, None, Some(new DrinksLoyaltyCard() {
+      val customer: Person = Person("Test Customer", 18, None, Some(new DrinksLoyaltyCard() {
         timestamps = timestampsMock
       }))
 
@@ -90,7 +90,7 @@ class BillSpec extends AnyWordSpec with Matchers {
         val item2: Item = Item("Test Item 2", 17.0, PremiumMeal)
         val item3: Item = Item("Test Item 3", 5.0, AlcoholicDrink)
 
-        val customer: Customer = Customer("Test Customer", 18, None, Some(new DiscountLoyaltyCard() {
+        val customer: Person = Person("Test Customer", 18, None, Some(new DiscountLoyaltyCard() {
           timestamps = getNTimestampsList(1)
         }))
 
@@ -129,7 +129,7 @@ class BillSpec extends AnyWordSpec with Matchers {
         val item3: Item = Item("Test Item 3", 5.0, AlcoholicDrink)
         val item4: Item = Item("Test Item 4", 35.0, AlcoholicDrink)
 
-        val customer: Customer = Customer("Test Customer", 18, None, Some(new DiscountLoyaltyCard() {
+        val customer: Person = Person("Test Customer", 18, None, Some(new DiscountLoyaltyCard() {
           timestamps = getNTimestampsList(8)
         }))
 
@@ -170,7 +170,7 @@ class BillSpec extends AnyWordSpec with Matchers {
 
         val sixMonthsAgo = LocalDate.now().minusMonths(6)
 
-        val customer: Customer = Customer("Test Customer", 18, Some(cafe.jobFactory(sixMonthsAgo)), Some(new DiscountLoyaltyCard() {
+        val customer: Person = Person("Test Customer", 18, Some(cafe.jobFactory(sixMonthsAgo)), Some(new DiscountLoyaltyCard() {
           timestamps = getNTimestampsList(8)
         }))
 
@@ -209,7 +209,7 @@ class BillSpec extends AnyWordSpec with Matchers {
         val item3: Item = Item("Test Item 3", 5.0, AlcoholicDrink)
         val item4: Item = Item("Test Item 4", 35.0, AlcoholicDrink)
 
-        val customer: Customer = Customer("Test Customer", 18, None, Some(new DiscountLoyaltyCard() {
+        val customer: Person = Person("Test Customer", 18, None, Some(new DiscountLoyaltyCard() {
           timestamps = getNTimestampsList(5)
         }))
 
