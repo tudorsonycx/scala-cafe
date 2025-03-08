@@ -1,3 +1,5 @@
+import java.time.LocalDate
+
 case class Cafe(name: String, private val menu: Menu) {
   def showMenu: String = menu.toString
 
@@ -29,13 +31,21 @@ case class Cafe(name: String, private val menu: Menu) {
               }
             } else Right(0)
 
-            serviceCharge.map(sc => Bill(customer, itemsWithStock, sc))
+            serviceCharge.map(sc => Bill(this, customer, itemsWithStock, sc))
         }
     }
   }
+
+  def jobFactory: Cafe.CafeJob = {
+    Cafe.CafeJob(LocalDate.now(), this)
+  }
+
+  def jobFactory(joinedDate: LocalDate): Cafe.CafeJob = {
+    Cafe.CafeJob(joinedDate, this)
+  }
 }
 
-object Cafe extends App {
+object Cafe {
   abstract class CafeError(message: String) extends Exception(message)
 
   case class MenuUnavailableItemError(message: String) extends CafeError(message)
@@ -48,11 +58,15 @@ object Cafe extends App {
 
   case class OrderInvalidItemList(message: String) extends CafeError(message)
 
-  val cafe = Cafe("Test Cafe", Menu(List(
-    Item("Test Item 0", 5.0, ColdDrink, 20),
-    Item("Test Item 1", 10.0, ColdFood, 5),
-    Item("Test Item 2", 20.0, HotFood, 5),
-    Item("Test Item 3", 30.0, PremiumMeal, 3)
-  )))
+  case class CafeJob private(
+    joinedDate: LocalDate,
+    cafe: Cafe
+  ) extends Job
 
+  object CafeJob {
+    // Hide the apply method by making it private
+    private[Cafe] def apply(joinedDate: LocalDate, cafe: Cafe): CafeJob = {
+      new CafeJob(joinedDate, cafe)
+    }
+  }
 }

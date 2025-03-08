@@ -1,4 +1,54 @@
-case class Bill(customer: Customer, var items: Map[Item, Int], serviceCharge: Double) {
+import sttp.client4.quick._
+import sttp.client4.Response
+import sttp.model.Uri
+
+import java.time.{LocalDate, Period}
+import java.util.Currency
+
+case class Bill(cafe: Cafe, customer: Customer, var items: Map[Item, Int], serviceCharge: Double, toCurrencyCode: String = "GBP", fromCurrencyCode: String = "GBP") {
+  private var toCurrencySymbol: String = Currency.getInstance(fromCurrencyCode.toUpperCase).getSymbol
+
+  val exchangeRate: Double = getExchangeRate
+
+  def getExchangeRate: Double = {
+    val exchangeRateOrError: Either[Bill.BillError, Double] = Bill.fetchExchangeRate(toCurrencyCode, fromCurrencyCode)
+    val exchangeRate: Double = exchangeRateOrError match {
+      case Left(_) =>
+        1.0
+      case Right(rate) =>
+        toCurrencySymbol = Currency.getInstance(toCurrencyCode.toUpperCase).getSymbol
+        rate
+    }
+
+    exchangeRate
+  }
+
+  private def applyExchangeRate(): Unit = {
+    items = items.map({
+      case (item, quantity) =>
+        item.copy(price = item.price * exchangeRate) -> quantity
+    })
+  }
+
+  private def applyEmployeeDiscount(): Unit = {
+    customer.job match {
+      case Some(job) =>
+        job match {
+          case Cafe.CafeJob(joinedDate, place) =>
+            if (place == cafe) {
+              val monthsWorked: Int = Period.between(joinedDate, LocalDate.now()).getMonths
+              if (monthsWorked >= 6) {
+                items = items.map({
+                  case (item, quantity) =>
+                    item.copy(price = item.price * 0.9) -> quantity
+                })
+              }
+            }
+          case _ => ()
+        }
+      case None => ()
+    }
+  }
 
   private def applyDrinksLoyaltyCardDiscount(): Unit = {
     customer.loyaltyCard match {
@@ -16,6 +66,7 @@ case class Bill(customer: Customer, var items: Map[Item, Int], serviceCharge: Do
               items = items + (drink -> (quantity - 1)) + (drink.copy(price = 0) -> 1)
             }
             card.addTimestamp()
+          case None => ()
         }
       case _ => ()
     }
@@ -50,13 +101,45 @@ case class Bill(customer: Customer, var items: Map[Item, Int], serviceCharge: Do
 
   override def toString: String = {
     val itemDetails = items.map({
-      case (item, quantity) => s"${item.name} x $quantity x ${item.price}"
+      case (item, quantity) => f"${item.name} x $quantity x $toCurrencySymbol${item.price}%.2f"
     }).mkString("\n")
-    f"Customer: ${customer.name}\nItems:\n$itemDetails\nSubtotal: $subTotal%.2f\n" +
-      f"Service Charge: $serviceCharge\nTotal: $total%.2f"
+    f"Customer: ${customer.name}\nItems:\n$itemDetails\nSubtotal: $toCurrencySymbol$subTotal%.2f\n" +
+      f"Service Charge: $serviceCharge\nTotal: $toCurrencySymbol$total%.2f"
   }
+
+  applyDiscountLoyaltyCardDiscount()
+
+  applyEmployeeDiscount()
 
   applyDrinksLoyaltyCardDiscount()
 
-  applyDiscountLoyaltyCardDiscount()
+  applyExchangeRate()
+}
+
+object Bill extends App {
+
+  abstract class BillError(message: String) extends Exception(message)
+
+  case object BillErrorToCurrencyNotFound extends BillError("To currency not found")
+
+  case object BillErrorFromCurrencyNotFound extends BillError("From currency not found")
+
+  def fetchExchangeRate(to: String, from: String = "gbp"): Either[BillError, Double] = {
+    val uri: Uri = uri"https://cdn.jsdelivr.net/npm/@fawazahmed0/currency-api@latest/v1/currencies/${from.toLowerCase()}.json"
+    try {
+      val response: Response[String] = quickRequest.get(uri).send()
+      val json = ujson.read(response.body)
+      val rates: Map[String, Double] = json(from.toLowerCase()).obj.toMap.map({
+        case (key, value) => key -> value.num
+      })
+      val rate: Option[Double] = rates.get(to.toLowerCase())
+      rate match {
+        case Some(rate) => Right(rate)
+        case None => Left(BillErrorToCurrencyNotFound)
+      }
+    } catch {
+      case _: Exception =>
+        Left(BillErrorFromCurrencyNotFound)
+    }
+  }
 }
