@@ -18,18 +18,20 @@ class BillSpec extends AnyWordSpec with Matchers {
     iterate()
   }
 
+  val cafe: Cafe = Cafe("Test Cafe", Menu(List()))
+
   "Bill.toString" should {
     "return a string representation of the bill" in {
       val item0: Item = Item("Test Item 0", 5.0, ColdDrink, 20)
       val item1: Item = Item("Test Item 1", 10.0, ColdFood, 5)
 
-      val customer: Customer = Customer("Test Customer", 18)
+      val customer: Customer = Customer("Test Customer", 18, None)
 
       val items: Map[Item, Int] = Map(item0 -> 2, item1 -> 1)
 
       val serviceCharge: Double = 0.1
 
-      val bill: Bill = Bill(customer, items, serviceCharge, "usd")
+      val bill: Bill = Bill(cafe, customer, items, serviceCharge, "usd")
 
       val exchangeRate: Double = bill.exchangeRate
 
@@ -49,7 +51,7 @@ class BillSpec extends AnyWordSpec with Matchers {
       val item0: Item = Item("Test Item 0", 5.0, ColdDrink, 20)
       val item1: Item = Item("Test Item 1", 10.0, ColdFood, 5)
 
-      val customer: Customer = Customer("Test Customer", 18, Some(new DrinksLoyaltyCard() {
+      val customer: Customer = Customer("Test Customer", 18, None, Some(new DrinksLoyaltyCard() {
         timestamps = timestampsMock
       }))
 
@@ -57,7 +59,7 @@ class BillSpec extends AnyWordSpec with Matchers {
 
       val serviceCharge: Double = 0.1
 
-      val bill: Bill = Bill(customer, items, serviceCharge, "RON")
+      val bill: Bill = Bill(cafe, customer, items, serviceCharge, "RON")
 
       val exchangeRate: Double = bill.exchangeRate
 
@@ -84,7 +86,7 @@ class BillSpec extends AnyWordSpec with Matchers {
         val item2: Item = Item("Test Item 2", 17.0, PremiumMeal)
         val item3: Item = Item("Test Item 3", 5.0, AlcoholicDrink)
 
-        val customer: Customer = Customer("Test Customer", 18, Some(new DiscountLoyaltyCard() {
+        val customer: Customer = Customer("Test Customer", 18, None, Some(new DiscountLoyaltyCard() {
           timestamps = getNTimestampsList(1)
         }))
 
@@ -92,7 +94,7 @@ class BillSpec extends AnyWordSpec with Matchers {
 
         val serviceCharge: Double = 0.25
 
-        val bill: Bill = Bill(customer, items, serviceCharge, "EUR")
+        val bill: Bill = Bill(cafe, customer, items, serviceCharge, "EUR")
 
         val exchangeRate: Double = bill.exchangeRate
 
@@ -121,7 +123,7 @@ class BillSpec extends AnyWordSpec with Matchers {
         val item3: Item = Item("Test Item 3", 5.0, AlcoholicDrink)
         val item4: Item = Item("Test Item 4", 35.0, AlcoholicDrink)
 
-        val customer: Customer = Customer("Test Customer", 18, Some(new DiscountLoyaltyCard() {
+        val customer: Customer = Customer("Test Customer", 18, None, Some(new DiscountLoyaltyCard() {
           timestamps = getNTimestampsList(8)
         }))
 
@@ -129,7 +131,7 @@ class BillSpec extends AnyWordSpec with Matchers {
 
         val serviceCharge: Double = 0.15
 
-        val bill: Bill = Bill(customer, items, serviceCharge, "JPY")
+        val bill: Bill = Bill(cafe, customer, items, serviceCharge, "JPY")
 
         val exchangeRate: Double = bill.exchangeRate
 
