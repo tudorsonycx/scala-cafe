@@ -39,6 +39,10 @@ case class Cafe(name: String, private val menu: Menu) {
   def jobFactory: Cafe.CafeJob = {
     Cafe.CafeJob(LocalDate.now(), this)
   }
+
+  def jobFactory(joinedDate: LocalDate): Cafe.CafeJob = {
+    Cafe.CafeJob(joinedDate, this)
+  }
 }
 
 object Cafe {
