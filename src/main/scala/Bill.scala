@@ -66,6 +66,7 @@ case class Bill(cafe: Cafe, customer: Customer, var items: Map[Item, Int], servi
               items = items + (drink -> (quantity - 1)) + (drink.copy(price = 0) -> 1)
             }
             card.addTimestamp()
+          case None => ()
         }
       case _ => ()
     }
