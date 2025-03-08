@@ -152,6 +152,45 @@ class BillSpec extends AnyWordSpec with Matchers {
             card.getStarCount shouldBe 8
         }
       }
+
+      "discount loyalty card has 8 stars and customer that has worked for at least 6 months there" in {
+        val item0: Item = Item("Test Item 0", 20.0, HotFood)
+        val item1: Item = Item("Test Item 1", 30.0, PremiumMeal)
+        val item2: Item = Item("Test Item 2", 25.0, PremiumMeal)
+        val item3: Item = Item("Test Item 3", 5.0, AlcoholicDrink)
+        val item4: Item = Item("Test Item 4", 35.0, AlcoholicDrink)
+
+        val sixMonthsAgo = LocalDate.now().minusMonths(6)
+
+        val customer: Customer = Customer("Test Customer", 18, Some(cafe.jobFactory(sixMonthsAgo)), Some(new DiscountLoyaltyCard() {
+          timestamps = getNTimestampsList(8)
+        }))
+
+        val items: Map[Item, Int] = Map(item0 -> 2, item1 -> 1, item2 -> 2, item3 -> 10, item4 -> 2)
+
+        val serviceCharge: Double = 0.25
+
+        val bill: Bill = Bill(cafe, customer, items, serviceCharge, "CAD")
+
+        val exchangeRate: Double = bill.exchangeRate
+
+        val result: String = bill.toString
+
+        result should include("Customer: Test Customer")
+        result should include(f"Test Item 0 x 2 x CA$$${15.12 * exchangeRate}%.2f")
+        result should include(f"Test Item 1 x 1 x CA$$${27.0 * exchangeRate}%.2f")
+        result should include(f"Test Item 2 x 2 x CA$$${22.5 * exchangeRate}%.2f")
+        result should include(f"Test Item 3 x 10 x CA$$${3.78 * exchangeRate}%.2f")
+        result should include(f"Test Item 4 x 2 x CA$$${26.46 * exchangeRate}%.2f")
+        result should include(f"Subtotal: CA$$${192.96 * exchangeRate}%.2f")
+        result should include(f"Service Charge: $serviceCharge")
+        result should include(f"Total: CA$$${241.2 * exchangeRate}%.2f")
+
+        bill.customer.loyaltyCard match {
+          case Some(card: DiscountLoyaltyCard) =>
+            card.getStarCount shouldBe 8
+        }
+      }
     }
   }
 }
