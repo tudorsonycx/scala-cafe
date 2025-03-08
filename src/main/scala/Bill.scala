@@ -36,7 +36,7 @@ case class Bill(cafe: Cafe, customer: Customer, var items: Map[Item, Int], servi
         job match {
           case Cafe.CafeJob(joinedDate, place) =>
             if (place == cafe) {
-              val monthsWorked: Int = Period.between(LocalDate.now(), joinedDate).getMonths
+              val monthsWorked: Int = Period.between(joinedDate, LocalDate.now()).getMonths
               if (monthsWorked >= 6) {
                 items = items.map({
                   case (item, quantity) =>
@@ -107,16 +107,16 @@ case class Bill(cafe: Cafe, customer: Customer, var items: Map[Item, Int], servi
       f"Service Charge: $serviceCharge\nTotal: $toCurrencySymbol$total%.2f"
   }
 
-  applyDrinksLoyaltyCardDiscount()
-
   applyDiscountLoyaltyCardDiscount()
 
   applyEmployeeDiscount()
 
+  applyDrinksLoyaltyCardDiscount()
+
   applyExchangeRate()
 }
 
-object Bill {
+object Bill extends App {
 
   abstract class BillError(message: String) extends Exception(message)
 
