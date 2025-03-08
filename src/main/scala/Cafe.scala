@@ -55,8 +55,8 @@ object Cafe {
   case class OrderInvalidItemList(message: String) extends CafeError(message)
 
   case class CafeJob private(
-    val joinedDate: LocalDate,
-    val cafe: Cafe
+    joinedDate: LocalDate,
+    cafe: Cafe
   ) extends Job
 
   object CafeJob {
