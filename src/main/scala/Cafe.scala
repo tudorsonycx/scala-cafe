@@ -31,7 +31,7 @@ case class Cafe(name: String, private val menu: Menu) {
               }
             } else Right(0)
 
-            serviceCharge.map(sc => Bill(customer, itemsWithStock, sc))
+            serviceCharge.map(sc => Bill(this, customer, itemsWithStock, sc))
         }
     }
   }
