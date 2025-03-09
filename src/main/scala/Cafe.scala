@@ -1,11 +1,33 @@
 import java.time.LocalDate
+import scala.util.Random
 
 case class Cafe(name: String, private val menu: Menu) {
+  var employees: List[Person] = List(Person(s"John '$name''", 35, Some(jobFactory)))
+
   def showMenu: String = menu.toString
 
-  def placeOrder(
-    customer: Customer,
+  def addEmployee(employee: Person): Unit = {
+    employees = employees :+ employee
+  }
+
+  def takeOrder(
+    customer: Person,
     items: Map[String, Int],
+    transactionType: Transaction,
+    toCurrencyCode: String = "GBP",
+    addServiceCharge: Boolean = true)
+    (customServiceCharge: Option[Double] = None): Either[Cafe.CafeError, Bill] = {
+    val employee = employees(Random.nextInt(employees.size))
+
+    placeOrder(customer, employee, items, transactionType, toCurrencyCode, addServiceCharge)(customServiceCharge)
+  }
+
+  def placeOrder(
+    customer: Person,
+    employee: Person,
+    items: Map[String, Int],
+    transactionType: Transaction,
+    toCurrencyCode: String = "GBP",
     addServiceCharge: Boolean = true)
     (customServiceCharge: Option[Double] = None): Either[Cafe.CafeError, Bill] = {
     items match {
@@ -31,7 +53,7 @@ case class Cafe(name: String, private val menu: Menu) {
               }
             } else Right(0)
 
-            serviceCharge.map(sc => Bill(this, customer, itemsWithStock, sc))
+            serviceCharge.map(sc => Bill(this, customer, employee, itemsWithStock, sc, transactionType, toCurrencyCode))
         }
     }
   }
@@ -64,7 +86,6 @@ object Cafe {
   ) extends Job
 
   object CafeJob {
-    // Hide the apply method by making it private
     private[Cafe] def apply(joinedDate: LocalDate, cafe: Cafe): CafeJob = {
       new CafeJob(joinedDate, cafe)
     }

@@ -1,7 +1,7 @@
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 
-import java.time.LocalDate
+import java.time.{LocalDate, LocalDateTime}
 import scala.annotation.tailrec
 
 class BillSpec extends AnyWordSpec with Matchers {
@@ -25,13 +25,15 @@ class BillSpec extends AnyWordSpec with Matchers {
       val item0: Item = Item("Test Item 0", 5.0, ColdDrink, 20)
       val item1: Item = Item("Test Item 1", 10.0, ColdFood, 5)
 
-      val customer: Customer = Customer("Test Customer", 18, None)
+      val customer: Person = Person("Test Customer", 18, None)
 
       val items: Map[Item, Int] = Map(item0 -> 2, item1 -> 1)
 
       val serviceCharge: Double = 0.1
 
-      val bill: Bill = Bill(cafe, customer, items, serviceCharge, "usd")
+      val bill: Bill = new Bill(cafe, customer, cafe.employees.head, items, serviceCharge, Card, "usd") {
+        override def isHappyHour: Boolean = false
+      }
 
       val exchangeRate: Double = bill.exchangeRate
 
@@ -51,7 +53,7 @@ class BillSpec extends AnyWordSpec with Matchers {
       val item0: Item = Item("Test Item 0", 5.0, ColdDrink, 20)
       val item1: Item = Item("Test Item 1", 10.0, ColdFood, 5)
 
-      val customer: Customer = Customer("Test Customer", 18, None, Some(new DrinksLoyaltyCard() {
+      val customer: Person = Person("Test Customer", 18, None, Some(new DrinksLoyaltyCard() {
         timestamps = timestampsMock
       }))
 
@@ -59,7 +61,9 @@ class BillSpec extends AnyWordSpec with Matchers {
 
       val serviceCharge: Double = 0.1
 
-      val bill: Bill = Bill(cafe, customer, items, serviceCharge, "RON")
+      val bill: Bill = new Bill(cafe, customer, cafe.employees.head, items, serviceCharge, Card, "RON") {
+        override def isHappyHour: Boolean = false
+      }
 
       val exchangeRate: Double = bill.exchangeRate
 
@@ -86,7 +90,7 @@ class BillSpec extends AnyWordSpec with Matchers {
         val item2: Item = Item("Test Item 2", 17.0, PremiumMeal)
         val item3: Item = Item("Test Item 3", 5.0, AlcoholicDrink)
 
-        val customer: Customer = Customer("Test Customer", 18, None, Some(new DiscountLoyaltyCard() {
+        val customer: Person = Person("Test Customer", 18, None, Some(new DiscountLoyaltyCard() {
           timestamps = getNTimestampsList(1)
         }))
 
@@ -94,7 +98,9 @@ class BillSpec extends AnyWordSpec with Matchers {
 
         val serviceCharge: Double = 0.25
 
-        val bill: Bill = Bill(cafe, customer, items, serviceCharge, "EUR")
+        val bill: Bill = new Bill(cafe, customer, cafe.employees.head, items, serviceCharge, Card, "EUR") {
+          override def isHappyHour: Boolean = false
+        }
 
         val exchangeRate: Double = bill.exchangeRate
 
@@ -123,7 +129,7 @@ class BillSpec extends AnyWordSpec with Matchers {
         val item3: Item = Item("Test Item 3", 5.0, AlcoholicDrink)
         val item4: Item = Item("Test Item 4", 35.0, AlcoholicDrink)
 
-        val customer: Customer = Customer("Test Customer", 18, None, Some(new DiscountLoyaltyCard() {
+        val customer: Person = Person("Test Customer", 18, None, Some(new DiscountLoyaltyCard() {
           timestamps = getNTimestampsList(8)
         }))
 
@@ -131,7 +137,9 @@ class BillSpec extends AnyWordSpec with Matchers {
 
         val serviceCharge: Double = 0.15
 
-        val bill: Bill = Bill(cafe, customer, items, serviceCharge, "JPY")
+        val bill: Bill = new Bill(cafe, customer, cafe.employees.head, items, serviceCharge, Card, "JPY") {
+          override def isHappyHour: Boolean = false
+        }
 
         val exchangeRate: Double = bill.exchangeRate
 
@@ -162,7 +170,7 @@ class BillSpec extends AnyWordSpec with Matchers {
 
         val sixMonthsAgo = LocalDate.now().minusMonths(6)
 
-        val customer: Customer = Customer("Test Customer", 18, Some(cafe.jobFactory(sixMonthsAgo)), Some(new DiscountLoyaltyCard() {
+        val customer: Person = Person("Test Customer", 18, Some(cafe.jobFactory(sixMonthsAgo)), Some(new DiscountLoyaltyCard() {
           timestamps = getNTimestampsList(8)
         }))
 
@@ -170,7 +178,9 @@ class BillSpec extends AnyWordSpec with Matchers {
 
         val serviceCharge: Double = 0.25
 
-        val bill: Bill = Bill(cafe, customer, items, serviceCharge, "CAD")
+        val bill: Bill = new Bill(cafe, customer, cafe.employees.head, items, serviceCharge, Card, "CAD") {
+          override def isHappyHour: Boolean = false
+        }
 
         val exchangeRate: Double = bill.exchangeRate
 
@@ -191,6 +201,68 @@ class BillSpec extends AnyWordSpec with Matchers {
             card.getStarCount shouldBe 8
         }
       }
+
+      "discount loyalty card has 8 stars and time is happy hours" in {
+        val item0: Item = Item("Test Item 0", 20.0, HotFood)
+        val item1: Item = Item("Test Item 1", 30.0, PremiumMeal)
+        val item2: Item = Item("Test Item 2", 25.0, PremiumMeal)
+        val item3: Item = Item("Test Item 3", 5.0, AlcoholicDrink)
+        val item4: Item = Item("Test Item 4", 35.0, AlcoholicDrink)
+
+        val customer: Person = Person("Test Customer", 18, None, Some(new DiscountLoyaltyCard() {
+          timestamps = getNTimestampsList(5)
+        }))
+
+        val items: Map[Item, Int] = Map(item0 -> 2, item1 -> 1, item2 -> 2, item3 -> 10, item4 -> 2)
+
+        val serviceCharge: Double = 0.15
+
+        val bill: Bill = new Bill(cafe, customer, cafe.employees.head, items, serviceCharge, Card) {
+          override def isHappyHour: Boolean = true
+        }
+
+        val exchangeRate: Double = bill.exchangeRate
+
+        val result: String = bill.toString
+
+        result should include("Customer: Test Customer")
+        result should include(f"Test Item 0 x 2 x £${18.0 * exchangeRate}%.2f")
+        result should include(f"Test Item 1 x 1 x £${30.0 * exchangeRate}%.2f")
+        result should include(f"Test Item 2 x 2 x £${25.0 * exchangeRate}%.2f")
+        result should include(f"Test Item 3 x 10 x £${2.5 * exchangeRate}%.2f")
+        result should include(f"Test Item 4 x 2 x £${17.5 * exchangeRate}%.2f")
+        result should include(f"Subtotal: £${176.0 * exchangeRate}%.2f")
+        result should include(f"Service Charge: $serviceCharge")
+        result should include(f"Total: £${202.4 * exchangeRate}%.2f")
+
+        bill.customer.loyaltyCard match {
+          case Some(card: DiscountLoyaltyCard) =>
+            card.getStarCount shouldBe 6
+        }
+      }
+    }
+
+    "return a string representation of the bill including the staff member, transaction type, and transaction date" in {
+      val item0: Item = Item("Test Item 0", 5.0, ColdDrink, 20)
+      val item1: Item = Item("Test Item 1", 10.0, ColdFood, 5)
+
+      val customer: Person = Person("Test Customer", 18, None)
+
+      val items: Map[Item, Int] = Map(item0 -> 2, item1 -> 1)
+
+      val serviceCharge: Double = 0.1
+
+      val mockedTransactionDate: LocalDateTime = LocalDateTime.now()
+
+      val bill: Bill = new Bill(cafe, customer, cafe.employees.head, items, serviceCharge, Cash) {
+        override val transactionDate: LocalDateTime = mockedTransactionDate
+      }
+
+      val result: String = bill.toString
+
+      result should include(s"Staff member: ${bill.cafe.employees.head.name}")
+      result should include("Transaction type: Cash")
+      result should include(s"Transaction date: $mockedTransactionDate")
     }
   }
 }
