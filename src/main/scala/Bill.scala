@@ -140,7 +140,7 @@ case class Bill(
     val itemDetails = items.map({
       case (item, quantity) => f"${item.name} x $quantity x $toCurrencySymbol${item.price}%.2f"
     }).mkString("\n")
-    f"${cafe.name}\nStaff member: ${employee.name}\nTransaction type: $transactionType\n$transactionDate" +
+    f"${cafe.name}\nStaff member: ${employee.name}\nTransaction type: $transactionType\n$transactionDate\n" +
       f"Customer: ${customer.name}\nItems:\n$itemDetails\nSubtotal: $toCurrencySymbol$subTotal%.2f\n" +
       f"Service Charge: $serviceCharge\nTotal: $toCurrencySymbol$total%.2f"
   }
