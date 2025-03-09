@@ -2,13 +2,25 @@ import sttp.client4.quick._
 import sttp.client4.Response
 import sttp.model.Uri
 
-import java.time.{LocalDate, LocalTime, Period}
+import java.time.{LocalDate, LocalDateTime, LocalTime, Period}
 import java.util.Currency
 
-case class Bill(cafe: Cafe, customer: Customer, var items: Map[Item, Int], serviceCharge: Double, toCurrencyCode: String = "GBP", fromCurrencyCode: String = "GBP") {
+case class Bill(
+  cafe: Cafe,
+  customer: Person,
+  employee: Person,
+  var items: Map[Item, Int],
+  serviceCharge: Double,
+  transactionType: Transaction,
+  toCurrencyCode: String = "GBP",
+  fromCurrencyCode: String = "GBP") {
   private var toCurrencySymbol: String = Currency.getInstance(fromCurrencyCode.toUpperCase).getSymbol
 
   val exchangeRate: Double = getExchangeRate
+
+  val transactionDate: LocalDateTime = getTransactionDate
+
+  private def getTransactionDate: LocalDateTime = LocalDateTime.now()
 
   def isHappyHour: Boolean = {
     val currentTime: LocalTime = LocalTime.now()
@@ -128,7 +140,8 @@ case class Bill(cafe: Cafe, customer: Customer, var items: Map[Item, Int], servi
     val itemDetails = items.map({
       case (item, quantity) => f"${item.name} x $quantity x $toCurrencySymbol${item.price}%.2f"
     }).mkString("\n")
-    f"Customer: ${customer.name}\nItems:\n$itemDetails\nSubtotal: $toCurrencySymbol$subTotal%.2f\n" +
+    f"${cafe.name}\nStaff member: ${employee.name}\nTransaction type: $transactionType\n$transactionDate" +
+      f"Customer: ${customer.name}\nItems:\n$itemDetails\nSubtotal: $toCurrencySymbol$subTotal%.2f\n" +
       f"Service Charge: $serviceCharge\nTotal: $toCurrencySymbol$total%.2f"
   }
 
