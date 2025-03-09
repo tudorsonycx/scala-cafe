@@ -43,13 +43,6 @@ case class Bill(
     exchangeRate
   }
 
-  private def applyExchangeRate(): Unit = {
-    items = items.map({
-      case (item, quantity) =>
-        item.copy(price = item.price * exchangeRate) -> quantity
-    })
-  }
-
   private def applyHappyHourDiscount(): Unit = {
     if (isHappyHour) {
       items = items.map({
@@ -138,12 +131,12 @@ case class Bill(
 
   override def toString: String = {
     val itemDetails = items.map({
-      case (item, quantity) => f"${item.name} x $quantity x $toCurrencySymbol${item.price}%.2f"
+      case (item, quantity) => f"${item.name} x $quantity x $toCurrencySymbol${item.price * exchangeRate}%.2f"
     }).mkString("\n")
     f"${cafe.name}\nStaff member: ${employee.name}\nTransaction type: $transactionType\n" +
       f"Transaction date: $transactionDate\nCustomer: ${customer.name}\nItems:\n$itemDetails\n" +
-      f"Subtotal: $toCurrencySymbol$subTotal%.2f\nService Charge: $serviceCharge\n" +
-      f"Total: $toCurrencySymbol$total%.2f"
+      f"Subtotal: $toCurrencySymbol${subTotal * exchangeRate}%.2f\nService Charge: $serviceCharge\n" +
+      f"Total: $toCurrencySymbol${total * exchangeRate}%.2f"
   }
 
   applyDiscountLoyaltyCardDiscount()
@@ -153,8 +146,6 @@ case class Bill(
   applyHappyHourDiscount()
 
   applyDrinksLoyaltyCardDiscount()
-
-  applyExchangeRate()
 }
 
 object Bill extends App {
