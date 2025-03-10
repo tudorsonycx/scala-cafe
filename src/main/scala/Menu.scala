@@ -11,6 +11,8 @@ case class Menu private(items: List[Item]) {
     itemNamesWithItem.get(itemName)
   }
 
+  def getItemNamesWithStock: Map[String, Int] = itemNamesWithStock
+
   def isItemAvailable(itemName: String, quantity: Int): Boolean =
     itemNamesWithStock.get(itemName).exists(stock => stock > 0 && stock >= quantity)
 
