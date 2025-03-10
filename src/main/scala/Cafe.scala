@@ -15,7 +15,7 @@ case class Cafe(name: String, private val menu: Menu) {
 
   def getShoppingList: Map[String, Int] = {
     menu.getItemNamesWithStock.filter({
-      case (itemName, quantity) => quantity == 0
+      case (_, quantity) => quantity == 0
     }).map({
       case (itemName, _) =>
         val item: Option[Item] = menu.getItemByName(itemName)
