@@ -45,6 +45,8 @@ case class Bill(
 
   private def applyHappyHourDiscount(): Unit = {
     if (isHappyHour) {
+      cafe.useDiscount("happyHourDiscount")
+
       items = items.map({
         case (item, quantity) => item.category match {
           case _: Drink => item.copy(price = item.price * 0.5) -> quantity
@@ -62,6 +64,8 @@ case class Bill(
             if (place == cafe) {
               val monthsWorked: Int = Period.between(joinedDate, LocalDate.now()).getMonths
               if (monthsWorked >= 6) {
+                cafe.useDiscount("employeeDiscount")
+
                 items = items.map({
                   case (item, quantity) => item.category match {
                     case _: Drink if isHappyHour => item -> quantity
@@ -90,6 +94,8 @@ case class Bill(
           firstDrink match {
             case Some((drink, quantity)) =>
               if (card.isNextFree) {
+                cafe.useDiscount("drinksLoyaltyCard")
+
                 items = items + (drink -> (quantity - 1)) + (drink.copy(price = 0) -> 1)
               }
               card.addTimestamp()
@@ -104,6 +110,8 @@ case class Bill(
     if (subTotal >= 20) {
       customer.loyaltyCard match {
         case Some(card: DiscountLoyaltyCard) =>
+          cafe.useDiscount("discountLoyaltyCard")
+
           items = items.map({
             case (item, quantity) =>
               val itemDiscount: Double = item.category match {
